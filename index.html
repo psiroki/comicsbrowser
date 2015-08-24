@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Comics Browser</title>
+<style>
+	html, body {
+		font-family: 'Helvetica Neue', Tahoma, sans-serif;
+		font-size: 10pt;
+		color: #111;
+		background-color: #fcfcfc;
+	}
+	
+	div {
+		position: fixed;
+		width: 100vw;
+		height: 100vh;
+		top: 0px;
+		left: 0px;
+		line-height: 100vh;
+		text-align: center;
+	}
+	
+	article {
+		display: inline-block;
+		line-height: 130%;
+		text-align: left;
+		width: 640px;
+		max-width: 90vw;
+		background-image: linear-gradient(to bottom, #f4f4f4, #eee);
+		background-color: #f0f0f0;
+		padding: 8px;
+		border-radius: 7px;
+		box-sizing: border-box;
+		border: #ccc 1px solid;
+		box-shadow: 0px 5px 7px -3px rgba(0,0,0,0.15);
+	}
+	
+	ol {
+		margin-top: 5pt;
+	}
+	
+	a.disabled {
+		color: #ccc;
+	}
+	
+</style>
+</head>
+<body><div><article>
+<ol>
+<li>Bookmark this: <a class="bookmark disabled" rel="nofollow" href="javascript:(function(){var%20s=document.createElement('script');s.setAttribute('src','__jsUrl__');document.getElementsByTagName('head')[0].appendChild(s);})();"
+	onclick="return false;">Comics Browser</a>
+<li>Load this bookmark on a <a
+	href="http://www.gocomics.com/pearlsbeforeswine/" target="cc">GoComics
+	comic viewer</a> tab
+<li>Use the cursor keys to browse, B to bookmark, J to jump to bookmark, Z
+	to toggle zoom and ESC to deactivate and remove the script
+</ol>
+</article></div><script type="application/javascript">
+Array.prototype.slice.call(document.querySelectorAll("a.bookmark")).forEach(function(e) {
+	var template = e.getAttribute("href");
+	var a = document.createElement("a");
+	a.href = "comicsbrowser.js";
+	template = template.replace(/__jsUrl__/g, a.href.replace(/^https?\:/, ""));
+	e.setAttribute("href", template);
+	e.className = "";
+});
+</script></body>
+</html>
