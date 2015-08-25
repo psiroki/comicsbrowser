@@ -203,7 +203,7 @@ window.comicsbrowser = (function() {
 	
 	pub.showPanel = function(html) {
 		var div = document.createElement("div");
-		var PADDING = "8px";
+		var PADDING = "8px";vi
 		div.style.display = "none";
 		div.style.boxSizing = "border-box";
 		div.style.padding = PADDING;
@@ -216,7 +216,9 @@ window.comicsbrowser = (function() {
 		if(zoom)
 			image.style.minWidth = "90vw";
 		image.style.cursor = "pointer";
+		image.style.pointerEvents = "none";
 		var span = document.createElement("span");
+		span.style.cursor = "pointer";
 		span.style.display = "block";
 		span.style.position = "absolute";
 		span.style.backgroundSize = "contain";
@@ -231,7 +233,7 @@ window.comicsbrowser = (function() {
 				pub.go("next");
 			});
 		});
-		image.style.visibility = "hidden";
+		image.style.opacity = 0;
 		if(image.naturalWidth) {
 			positionPanel(div);
 		} else {
