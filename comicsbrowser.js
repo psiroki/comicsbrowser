@@ -1,6 +1,6 @@
-if(window.comicsbrowser && typeof window.comicsbrowser.shutdown === "function")
-	window.comicsbrowser.shutdown();
-window.comicsbrowser = (function() {
+window.comicsbrowser = (function(oldPub) {
+	if(typeof oldPub === "object" && typeof oldPub.shutdown === "function")
+		oldPub.shutdown();
 	var efn = function() { };
 	var pub = { };
 	var console = window.console || { error: efn, warn: efn, log: efn };
@@ -203,7 +203,7 @@ window.comicsbrowser = (function() {
 	
 	pub.showPanel = function(html) {
 		var div = document.createElement("div");
-		var PADDING = "8px";vi
+		var PADDING = "8px";
 		div.style.display = "none";
 		div.style.boxSizing = "border-box";
 		div.style.padding = PADDING;
@@ -277,5 +277,4 @@ window.comicsbrowser = (function() {
 	pub.showPanel();
 	
 	return pub;
-})();
-
+})(window.comicsbrowser);
