@@ -216,9 +216,9 @@ window.comicsbrowser = (function(oldPub) {
 		if(zoom)
 			image.style.minWidth = "90vw";
 		image.style.cursor = "pointer";
-		image.style.pointerEvents = "none";
 		var span = document.createElement("span");
 		span.style.cursor = "pointer";
+		span.style.pointerEvents = "none";
 		span.style.display = "block";
 		span.style.position = "absolute";
 		span.style.backgroundSize = "contain";
