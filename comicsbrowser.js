@@ -203,6 +203,7 @@ window.comicsbrowser = (function(oldPub) {
 	
 	pub.showPanel = function(html) {
 		var div = document.createElement("div");
+		div.className = "comicsBrowser";
 		var PADDING = "8px";
 		div.style.display = "none";
 		div.style.boxSizing = "border-box";
@@ -262,6 +263,37 @@ window.comicsbrowser = (function(oldPub) {
 		var url = localStorage[bookmarkKey()];
 		if(url)
 			pub.load(url);
+	};
+	
+	function removeChildrenIf(parent, filter) {
+		Array.prototype.slice.call(parent.childNodes)
+			.filter(filter)
+			.forEach(function(e) {
+				e.parentNode.removeChild(e);
+			});
+	}
+	
+	pub.removeDistractions = function() {
+		var heads = Array.prototype.slice.call(document.getElementsByTagName("head"));
+		heads.forEach(function(head) {
+			var keep = { "title": true, "meta": true };
+			removeChildrenIf(head, function(child) {
+				if(child.nodeType !== Node.ELEMENT_NODE)
+					return true;
+				return !keep[child.tagName.toLowerCase()];
+			});
+		});
+		
+		var body = document.body;
+		removeChildrenIf(body, function(child) {
+			return child.className !== "comicsBrowser";
+		});
+		
+		var maxTimeout = setTimeout(function() { }, 0);
+		for(var i=0; i<maxTimeout; ++i) {
+			clearTimeout(i);
+			clearInterval(i);
+		}
 	};
 	
 	pub.shutdown = function() {
