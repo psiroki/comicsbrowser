@@ -187,6 +187,7 @@ window.comicsbrowser = (function(oldPub) {
 			document.body.appendChild(fader);
 			document.body.addEventListener("keydown", keyDownHandler);
 			
+			fader.className = "comicsBrowser";
 			fader.style.backgroundColor = "rgba(0,0,0,0.9)";
 			fader.style.position = "fixed";
 			fader.style.left = fader.style.top = fader.style.right = fader.style.bottom = "0px";
@@ -203,7 +204,6 @@ window.comicsbrowser = (function(oldPub) {
 	
 	pub.showPanel = function(html) {
 		var div = document.createElement("div");
-		div.className = "comicsBrowser";
 		var PADDING = "8px";
 		div.style.display = "none";
 		div.style.boxSizing = "border-box";
