@@ -41,7 +41,8 @@ window.comicsbrowser = (function(oldPub) {
 	
 	pub.imageFromHtml = function(html) {
 		var p = html.indexOf("class=\"strip\"");
-		var p2 = html.lastIndexOf("<img", html.indexOf("class=\"strip\"", p+1));
+		var nextStrip = Math.max(p, html.indexOf("class=\"strip\"", p+1));
+		var p2 = html.lastIndexOf("<img", nextStrip);
 		var src = x(html).endOf("src=\"", p2);
 		var srcEnd = html.indexOf('"', src);
 		var imgHtml = "<img src=\""+html.substring(src, srcEnd)+"\"/>";
