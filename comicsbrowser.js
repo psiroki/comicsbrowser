@@ -178,7 +178,7 @@ window.comicsbrowser = (function(oldPub) {
 	destructors.push(destroyLastPanel);
 	
 	function positionPanel(div) {
-		div.style.display = "block";
+		div.style.display = "inline-block";
 		div.style.maxHeight = "99vh";
 		if(div.parentNode === null) {
 			var fader = document.createElement("div");
@@ -193,14 +193,11 @@ window.comicsbrowser = (function(oldPub) {
 			fader.style.position = "fixed";
 			fader.style.left = fader.style.top = fader.style.right = fader.style.bottom = "0px";
 			fader.style.zIndex = 1000;
+			fader.style.lineHeight = "100vh";
+			fader.style.textAlign = "center";
 		}
-		div.style.position = "absolute";
-		var w = div.offsetWidth;
-		var h = div.offsetHeight;
-		div.style.marginLeft = Math.floor(-w/2)+"px";
-		div.style.marginTop = Math.floor(-h/2)+"px";
-		div.style.top = "50vh";
-		div.style.left = "50vw";
+		div.style.lineHeight = "100%";
+		div.style.verticalAlign = "middle";
 	};
 	
 	pub.showPanel = function(html) {
