@@ -179,6 +179,7 @@ window.comicsbrowser = (function(oldPub) {
 	
 	function positionPanel(div) {
 		div.style.display = "inline-block";
+		div.style.position = "relative";
 		div.style.maxHeight = "99vh";
 		if(div.parentNode === null) {
 			var fader = document.createElement("div");
