@@ -39,13 +39,26 @@ window.comicsbrowser = (function(oldPub) {
 			scriptTag.parentNode.removeChild(scriptTag);
 	});
 	
-	pub.imageFromHtml = function(html) {
+	function imageUrlFromHtml(html) {
 		var p = html.indexOf("class=\"strip\"");
 		var nextStrip = Math.max(p, html.indexOf("class=\"strip\"", p+1));
 		var p2 = html.lastIndexOf("<img", nextStrip);
 		var src = x(html).endOf("src=\"", p2);
 		var srcEnd = html.indexOf('"', src);
-		var imgHtml = "<img src=\""+html.substring(src, srcEnd)+"\"/>";
+		return html.substring(src, srcEnd);
+	}
+	
+	function validOrNull(state) {
+		if(typeof state !== "string")
+			return null;
+		if((imageUrlFromHtml(state) || "") === "")
+			return null;
+		return state;
+	}
+	
+	pub.imageFromHtml = function(html) {
+		var url = imageUrlFromHtml(html);
+		var imgHtml = "<img src=\""+url+"\"/>";
 		var div = document.createElement("div");
 		div.innerHTML = imgHtml;
 		var img = div.firstChild;
@@ -70,7 +83,7 @@ window.comicsbrowser = (function(oldPub) {
 		var div = document.createElement("div");
 		div.innerHTML = imgHtml;
 		var a = div.firstChild;
-		return a.href;
+		return a.href === "null" ? null : a.href;
 	};
 	
 	pub.titleFromHtml = function(html) {
@@ -109,6 +122,8 @@ window.comicsbrowser = (function(oldPub) {
 	
 	var zoom = true;
 	
+	var historySpecified = history.state != null;
+	var historyValid = historySpecified && validOrNull(history.state) != null;
 	var currentHtml = history.state || document.documentElement.innerHTML;
 	
 	pub.load = function(url, onload) {
@@ -306,6 +321,9 @@ window.comicsbrowser = (function(oldPub) {
 	};
 	
 	pub.showPanel();
+	if(historySpecified && !historyValid) {
+		pub.load(location.toString());
+	}
 	
 	return pub;
 })(window.comicsbrowser);
