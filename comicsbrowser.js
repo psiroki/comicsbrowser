@@ -169,22 +169,33 @@ window.comicsbrowser = (function(oldPub) {
 	};
 
 	function keyDownHandler(e) {
+		var killEvent = function() {
+			e.preventDefault();
+			e.stopPropagation();
+			e.stopImmediatePropagation();
+		};
 		if(e.which === LEFT || e.which === RIGHT) {
+			killEvent();
 			var cls = e.which === LEFT ? "prev" : "next";
 			pub.go(cls);
 		}
 		if(e.which === "B".charCodeAt(0)) {
+			killEvent();
 			pub.updateBookmark();
 		}
 		if(e.which === "J".charCodeAt(0)) {
+			killEvent();
 			pub.loadBookmark();
 		}
 		if(e.which === "Z".charCodeAt(0)) {
+			killEvent();
 			zoom = !zoom;
 			pub.showPanel(history.state);
 		}
-		if(e.which === ESC)
+		if(e.which === ESC) {
+			killEvent();
 			pub.shutdown();
+		}
 	};
 
 	function popStateHandler(e) {
