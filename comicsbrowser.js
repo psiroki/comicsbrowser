@@ -5,7 +5,7 @@ window.comicsbrowser = (function(oldPub) {
 	var pub = { };
 	var console = window.console || { error: efn, warn: efn, log: efn };
 	var destructors = [];
-	
+
 	function extendString(s) {
 		return {
 			endOf: function(search, position) {
@@ -19,73 +19,79 @@ window.comicsbrowser = (function(oldPub) {
 			}
 		};
 	};
-	
+
 	function x(o) {
 		if(typeof o === "string" || o instanceof String)
 			return extendString(o.valueOf());
 		return o;
 	};
-	
+
 	var scriptTag = null;
-	
+
 	Array.prototype.slice.call(document.getElementsByTagName("script")).forEach(function(e) {
 		var src = e.src;
 		if(typeof src === "string" && x(src).endsWith("/comicsbrowser.js"))
 			scriptTag = e;
 	});
-	
+
 	destructors.push(function() {
 		if(scriptTag !== null && scriptTag.parentNode !== null)
 			scriptTag.parentNode.removeChild(scriptTag);
 	});
-	
-	function imageUrlFromHtml(html) {
-		var p = html.indexOf("class=\"strip\"");
-		var nextStrip = Math.max(p, html.indexOf("class=\"strip\"", p+1));
-		var p2 = html.lastIndexOf("<img", nextStrip);
-		var src = x(html).endOf("src=\"", p2);
-		var srcEnd = html.indexOf('"', src);
+
+	var stripClasses = "img-fluid item-comic-image";
+	function quotedImageUrlFromHtml(html) {
+		var stripClass = "class=\""+stripClasses+"\"";
+		var p = html.indexOf(stripClass);
+		var p2 = html.indexOf("<img", p);
+		var src = x(html).endOf("src=", p2);
+		var quot = html.charAt(src);
+		var srcEnd = html.indexOf(quot, src+1)+1;
 		return html.substring(src, srcEnd);
 	}
-	
+
 	function validOrNull(state) {
 		if(typeof state !== "string")
 			return null;
-		if((imageUrlFromHtml(state) || "") === "")
+		if((quotedImageUrlFromHtml(state).replace(/['"]/g, "") || "") === "")
 			return null;
 		return state;
 	}
-	
+
 	pub.imageFromHtml = function(html) {
-		var url = imageUrlFromHtml(html);
-		var imgHtml = "<img src=\""+url+"\"/>";
+		var qurl = quotedImageUrlFromHtml(html);
+		var imgHtml = "<img src="+qurl+"/>";
 		var div = document.createElement("div");
 		div.innerHTML = imgHtml;
 		var img = div.firstChild;
 		div.removeChild(img);
 		return img;
 	};
-	
+
+	var linkClassLookup = { prev: "control-nav-older", next: "control-nav-newer" };
 	pub.linkFromHtml = function(html, linkClass) {
+		linkClass = linkClassLookup[linkClass] || linkClass;
 		var p = html.indexOf("class=\""+linkClass+"\"");
 		if(p < 0)
 			return null;
-		var p2 = html.lastIndexOf("<", p);
+		var p2 = html.indexOf("<", p);
 		if(p2 < 0 || !/^<a\s$/g.test(html.substring(p2, p2+3)))
 			return null;
-		var src = x(html).endOf("href=\"", p2);
+		var src = x(html).endOf("href=", p2);
 		if(src < 0)
 			return null;
-		var srcEnd = html.indexOf('"', src);
+		var quot = html.charAt(src);
+		var srcEnd = html.indexOf(quot, src+1);
 		if(srcEnd < 0)
 			return null;
-		var imgHtml = "<a href=\""+html.substring(src, srcEnd)+"\">foo</a>";
+		++srcEnd;
+		var imgHtml = "<a href="+html.substring(src, srcEnd)+">foo</a>";
 		var div = document.createElement("div");
 		div.innerHTML = imgHtml;
 		var a = div.firstChild;
 		return a.href === "null" ? null : a.href;
 	};
-	
+
 	pub.titleFromHtml = function(html) {
 		var ts = x(html).endOf("<title>");
 		var te = html.indexOf("</title>");
@@ -93,39 +99,42 @@ window.comicsbrowser = (function(oldPub) {
 		div.innerHTML = html.substring(ts, te);
 		return div.innerText;
 	};
-	
+
 	pub.compactHtml = function(html) {
 		var div = document.createElement("div");
 		var title = document.createElement("title");
 		title.innerText = pub.titleFromHtml(html);
-		var img = document.createElement("img");
-		img.className = "strip";
-		div.appendChild(img);
+		div.className = "img-fluid item-comic-image";
 		div.appendChild(pub.imageFromHtml(html));
-		
+
 		function addAnchor(html, cls) {
+			var container = document.createElement("i");
 			var a = document.createElement("a");
 			a.href = pub.linkFromHtml(html, cls);
-			a.className = cls;
-			div.appendChild(a);
+			container.className = linkClassLookup[cls];
+			container.appendChild(a);
+			div.appendChild(container);
 		};
-		
+
 		addAnchor(html, "prev");
 		addAnchor(html, "next");
-		
-		return div.innerHTML;
+
+		var outer = document.createElement("div");
+		outer.appendChild(div);
+
+		return outer.innerHTML;
 	};
-	
+
 	var RIGHT = 39;
 	var LEFT = 37;
 	var ESC = 27;
-	
+
 	var zoom = true;
-	
+
 	var historySpecified = history.state != null;
 	var historyValid = historySpecified && validOrNull(history.state) != null;
 	var currentHtml = history.state || document.documentElement.innerHTML;
-	
+
 	pub.load = function(url, onload) {
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function() {
@@ -140,14 +149,14 @@ window.comicsbrowser = (function(oldPub) {
 		xhr.open("GET", url, true);
 		xhr.send();
 	};
-	
+
 	pub.go = function(cls) {
 		var link = pub.linkFromHtml(currentHtml, cls);
 		if(link !== null) {
 			pub.load(link);
 		}
 	};
-	
+
 	function keyDownHandler(e) {
 		if(e.which === LEFT || e.which === RIGHT) {
 			var cls = e.which === LEFT ? "prev" : "next";
@@ -166,32 +175,32 @@ window.comicsbrowser = (function(oldPub) {
 		if(e.which === ESC)
 			pub.shutdown();
 	};
-	
+
 	function popStateHandler(e) {
 		e.preventDefault();
 		pub.showPanel(e.state);
 	};
-	
+
 	window.addEventListener("popstate", popStateHandler);
-	
+
 	destructors.push(function() {
 		window.removeEventListener("popstate", popStateHandler);
 	});
-	
+
 	var lastPanel = null;
-	
+
 	function destroyLastPanel() {
 		if(lastPanel !== null && lastPanel.parentNode !== null) {
 			lastPanel.parentNode.removeChild(lastPanel);
 		}
-		
+
 		document.body.removeEventListener("keydown", keyDownHandler);
-		
+
 		lastPanel = null;
 	}
-	
+
 	destructors.push(destroyLastPanel);
-	
+
 	function positionPanel(div) {
 		div.style.display = "inline-block";
 		div.style.position = "relative";
@@ -203,19 +212,19 @@ window.comicsbrowser = (function(oldPub) {
 			fader.appendChild(div);
 			document.body.appendChild(fader);
 			document.body.addEventListener("keydown", keyDownHandler);
-			
+
 			fader.className = "comicsBrowser";
 			fader.style.backgroundColor = "rgba(0,0,0,0.9)";
 			fader.style.position = "fixed";
 			fader.style.left = fader.style.top = fader.style.right = fader.style.bottom = "0px";
-			fader.style.zIndex = 1000;
+			fader.style.zIndex = 2000;
 			fader.style.lineHeight = "100vh";
 			fader.style.textAlign = "center";
 		}
 		div.style.lineHeight = "100%";
 		div.style.verticalAlign = "middle";
 	};
-	
+
 	pub.showPanel = function(html) {
 		var div = document.createElement("div");
 		var PADDING = "8px";
@@ -256,29 +265,29 @@ window.comicsbrowser = (function(oldPub) {
 				positionPanel(div);
 			};
 		}
-		
+
 		return div;
 	};
-	
+
 	function bookmarkKey() {
 		var path = location.pathname.replace(/^\/?([^\/]+)\/.*$/g, "$1");
 		var name = decodeURIComponent(path);
 		return "bookmark_"+name;
 	}
-	
+
 	pub.updateBookmark = function(onlyIfNewer) {
 		var oldBookmark = localStorage[bookmarkKey()];
 		var url = location.toString();
 		if(!onlyIfNewer || url > oldBookmark)
 			localStorage[bookmarkKey()] = url;
 	};
-	
+
 	pub.loadBookmark = function() {
 		var url = localStorage[bookmarkKey()];
 		if(url)
 			pub.load(url);
 	};
-	
+
 	function removeChildrenIf(parent, filter) {
 		Array.prototype.slice.call(parent.childNodes)
 			.filter(filter)
@@ -286,7 +295,7 @@ window.comicsbrowser = (function(oldPub) {
 				e.parentNode.removeChild(e);
 			});
 	}
-	
+
 	pub.removeDistractions = function() {
 		var heads = Array.prototype.slice.call(document.getElementsByTagName("head"));
 		heads.forEach(function(head) {
@@ -297,19 +306,19 @@ window.comicsbrowser = (function(oldPub) {
 				return !keep[child.tagName.toLowerCase()];
 			});
 		});
-		
+
 		var body = document.body;
 		removeChildrenIf(body, function(child) {
 			return child.className !== "comicsBrowser";
 		});
-		
+
 		var maxTimeout = setTimeout(function() { }, 0);
 		for(var i=0; i<maxTimeout; ++i) {
 			clearTimeout(i);
 			clearInterval(i);
 		}
 	};
-	
+
 	pub.shutdown = function() {
 		destructors.forEach(function(d) {
 			try {
@@ -319,11 +328,11 @@ window.comicsbrowser = (function(oldPub) {
 			}
 		});
 	};
-	
+
 	pub.showPanel();
 	if(historySpecified && !historyValid) {
 		pub.load(location.toString());
 	}
-	
+
 	return pub;
 })(window.comicsbrowser);
