@@ -40,9 +40,14 @@ window.comicsbrowser = (function(oldPub) {
 	});
 
 	var stripClasses = "img-fluid item-comic-image";
+	var secondaryStripClasses = "img-comic-container";
 	function quotedImageUrlFromHtml(html) {
 		var stripClass = "class=\""+stripClasses+"\"";
 		var p = html.indexOf(stripClass);
+		if(p < 0) {
+			stripClass = "class=\""+secondaryStripClasses+"\"";
+			p = html.indexOf(stripClass);
+		}
 		var p2 = html.indexOf("<img", p);
 		var src = x(html).endOf("src=", p2);
 		var quot = html.charAt(src);
@@ -69,11 +74,17 @@ window.comicsbrowser = (function(oldPub) {
 	};
 
 	var linkClassLookup = { prev: "control-nav-older", next: "control-nav-newer" };
-	pub.linkFromHtml = function(html, linkClass) {
-		linkClass = linkClassLookup[linkClass] || linkClass;
+	var secondaryClassLookup = { prev: "nav-comic nav-left", next: "nav-comic nav-right" };
+	pub.linkFromHtml = function(html, direction) {
+		var linkClass = linkClassLookup[direction] || direction;
+		var secondaryLinkClass = secondaryClassLookup[direction];
 		var p = html.indexOf("class=\""+linkClass+"\"");
-		if(p < 0)
-			return null;
+		if(p < 0) {
+			if(secondaryLinkClass)
+				p = html.indexOf("class=\""+secondaryLinkClass+"\"");
+			if(p < 0)
+				return null;
+		}
 		var p2 = html.indexOf("<", p);
 		if(p2 < 0 || !/^<a\s$/g.test(html.substring(p2, p2+3)))
 			return null;
