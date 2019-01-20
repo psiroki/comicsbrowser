@@ -16,6 +16,11 @@ window.comicsbrowser = (function(oldPub) {
 			},
 			endsWith: function(suffix) {
 				return s.substring(s.length-suffix.length) === suffix;
+			},
+			reIndexOf: function(re, si) {
+	    		si = si || 0;
+	    		var m = re.exec(s.substring(si));
+	    		return m ? m.index + si : -1;
 			}
 		};
 	};
@@ -39,7 +44,7 @@ window.comicsbrowser = (function(oldPub) {
 			scriptTag.parentNode.removeChild(scriptTag);
 	});
 
-	var stripClasses = "img-fluid item-comic-image";
+	var stripClasses = "item-comic-image";
 	var secondaryStripClasses = "img-comic-container";
 	function quotedImageUrlFromHtml(html) {
 		var stripClass = "class=\""+stripClasses+"\"";
@@ -73,19 +78,19 @@ window.comicsbrowser = (function(oldPub) {
 		return img;
 	};
 
-	var linkClassLookup = { prev: "control-nav-older", next: "control-nav-newer" };
-	var secondaryClassLookup = { prev: "nav-comic nav-left", next: "nav-comic nav-right" };
+	var linkClassLookup = { prev: "fa-caret-left", next: "fa-caret-right" };
+	var secondaryClassLookup = { prev: "gc-calendar-nav__previous", next: "gc-calendar-nav__next" };
 	pub.linkFromHtml = function(html, direction) {
 		var linkClass = linkClassLookup[direction] || direction;
 		var secondaryLinkClass = secondaryClassLookup[direction];
-		var p = html.indexOf("class=\""+linkClass+"\"");
+		var p = x(html).reIndexOf(new RegExp("class=[\"'][^\"']*"+linkClass+"[^\"']*[\"']"));
 		if(p < 0) {
 			if(secondaryLinkClass)
-				p = html.indexOf("class=\""+secondaryLinkClass+"\"");
+				p = x(html).reIndexOf(new RegExp("class=[\"'][^\"']*"+secondaryLinkClass+"[^\"']*[\"']"));
 			if(p < 0)
 				return null;
 		}
-		var p2 = html.indexOf("<", p);
+		var p2 = html.lastIndexOf("<", p);
 		if(p2 < 0 || !/^<a\s$/g.test(html.substring(p2, p2+3)))
 			return null;
 		var src = x(html).endOf("href=", p2);
