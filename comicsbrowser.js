@@ -18,9 +18,9 @@ window.comicsbrowser = (function(oldPub) {
 				return s.substring(s.length-suffix.length) === suffix;
 			},
 			reIndexOf: function(re, si) {
-	    		si = si || 0;
-	    		var m = re.exec(s.substring(si));
-	    		return m ? m.index + si : -1;
+				si = si || 0;
+				var m = re.exec(s.substring(si));
+				return m ? m.index + si : -1;
 			}
 		};
 	};
@@ -127,7 +127,7 @@ window.comicsbrowser = (function(oldPub) {
 			var container = document.createElement("i");
 			var a = document.createElement("a");
 			a.href = pub.linkFromHtml(html, cls);
-			container.className = linkClassLookup[cls];
+			a.className = linkClassLookup[cls];
 			container.appendChild(a);
 			div.appendChild(container);
 		};
